@@ -24,13 +24,14 @@ pnpm add @manauser/react-render-log
 
 ## Usage
 
-**app.tsx** (with provider as a wrapper):
+**app.tsx** (variant 1 - with provider as a wrapper):
 
 ```typescript jsx
+// app.tsx
 import { FC } from 'react'
 import { RenderLogProvider } from '@manauser/react-render-log'
 
-import { Home } from '@pages/home'
+import { Home } from './home'
 
 const App: FC = () => (
   <RenderLogProvider
@@ -45,16 +46,17 @@ export default App
 ```
 
 or
-**app.tsx** (with provider as a HOC `withRenderLogProvider`):
+**app.tsx** (variant 2 - with provider as a HOC `withRenderLogProvider`):
 
 ```typescript jsx
+// app.tsx
 import { FC } from 'react'
 import {
   OwnRenderLogProviderProps,
   withRenderLogProvider,
 } from '@manauser/react-render-log'
 
-import { Home } from '@pages/home'
+import { Home } from './home'
 
 const App: FC = () => <Home />
 
@@ -67,30 +69,62 @@ export default withRenderLogProvider.apply(
 )
 ```
 
+or **app.tsx** (variant 3 - with combine providers via `combine-function`):
+
+```typescript jsx
+// app.tsx
+import { FC } from 'react'
+
+import { Home } from './home'
+import { withProviders } from './providers'
+
+const App: FC = () => <Home />
+
+export default withProviders(App)
+```
+
+where `withProviders` is a function that wraps the component in all the providers you need.  
+You need to install for this case `compose-function` package.
+
+```typescript jsx
+// providers.ts
+import { withRenderLogProvider } from '@manauser/react-render-log'
+import compose from 'compose-function'
+
+export const withProviders = compose(
+  withRenderLogProvider.bind({
+    debugEnabled: import.meta.env.MODE !== 'production',
+    isStrictMode: import.meta.env.MODE === 'development',
+  }),
+)
+```
+
 **home.tsx** (as example of using `withRenderLog` HOC):
 
 ```typescript jsx
+// home.tsx
 import { FC } from 'react'
 import { withRenderLog } from '@manauser/react-render-log'
 
-import { Smt } from '@widgets/smt'
+import { Smt } from './smt'
 
 const Home: FC = () => (
   <div>
-    <Smt renderLogId="1" title="first" /> <Smt renderLogId="2" title="second" />{' '}
-    home
+    <Smt renderLogId="1" title="first" />
+    <Smt renderLogId="2" title="second" />
   </div>
 )
 
 export default withRenderLog(Home) // or withRenderLog(Home, 'SomeCustomName')
 ```
 
-By render list of the same components, you should use `renderLogId` prop (like a `key`).
+By render list of the same components (like above), you should use `renderLogId` prop (like a `key`).
 In this case, the props of this component should be wrapped in `PropsWithRenderLog` type.
 
 **smt.tsx** (as example of using `withRenderLog` HOC and `PropsWithRenderLog`):
 
 ```typescript jsx
+// smt.tsx
 import { FC } from 'react'
 import { PropsWithRenderLog, withRenderLog } from '@manauser/react-render-log'
 
